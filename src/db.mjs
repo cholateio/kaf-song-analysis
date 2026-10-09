@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const TABLE = 'Songs';
+const TABLE = 'kaf_songs';
 const BUCKET = 'song-blobs';
 
 let client = null;

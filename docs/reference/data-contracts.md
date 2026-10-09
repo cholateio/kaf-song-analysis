@@ -1,4 +1,4 @@
-# Data Contracts — `Songs` table + Storage blobs reference
+# Data Contracts — `kaf_songs` table + Storage blobs reference
 
 Canonical reference for everything [analyzer.mjs](../../analyzer.mjs) writes when it
 ingests a YouTube song. Frontend consumers should treat this file as the single
@@ -14,13 +14,13 @@ please open a PR.
 
 For each song, `analyzer.mjs` writes two things:
 
-1. **A small row** in the Postgres `"Songs"` table holding metadata + lyrics.
+1. **A small row** in the Postgres `kaf_songs` table holding metadata + lyrics.
 2. **Two binary blobs** in the Supabase Storage bucket `song-blobs`, holding
    the per-frame spectrum and clock data that used to live in JSONB columns.
 
 ```
           ┌─────────────────────────────────┐
-          │  Supabase Postgres "Songs" row  │
+          │  Supabase Postgres kaf_songs row  │
           │  ─────────────────────────────  │
           │  id, video_id, title, artist    │
           │  metadata (jsonb, ~5 KB)        │
@@ -48,7 +48,7 @@ which the frontend fetches separately.
 
 Before running `analyzer.mjs`:
 
-1. **Create the `"Songs"` table.** Apply [supabase-schema.sql](../../supabase-schema.sql)
+1. **Create the `kaf_songs` table.** Apply [supabase-schema.sql](../../supabase-schema.sql)
    via the Supabase SQL editor or CLI.
 2. **Create the `song-blobs` Storage bucket.** In the Supabase dashboard:
    - Storage → New bucket
@@ -64,7 +64,7 @@ toggle grants automatically when you mark the bucket public.
 
 ---
 
-## 2. Songs table DDL
+## 2. kaf_songs table DDL
 
 See [supabase-schema.sql](../../supabase-schema.sql) for the exact `CREATE TABLE`.
 Summary:
@@ -599,7 +599,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);  // anon key is 
 async function loadSong(videoId) {
   // 1. Pull the small row
   const { data: song, error } = await supabase
-    .from('Songs')
+    .from('kaf_songs')
     .select('*')
     .eq('video_id', videoId)
     .single();

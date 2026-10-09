@@ -7,7 +7,7 @@
 
 花譜（KAF）cover 曲的 YouTube ingest + 音訊分析 pipeline：用 yt-dlp 抓音訊與
 字幕 → Meyda 做每幀 spectrum 分析 → 打包成 binary blob 連同歌詞寫入 Supabase
-（`Songs` 表 + `song-blobs` storage bucket），供 3D 前端視覺化消費。前端消費者
+（`kaf_songs` 表 + `song-blobs` storage bucket），供 3D 前端視覺化消費。前端消費者
 為 **kaf-observatory**（本 repo 的 `docs/reference/clock-analysis-handover.md`
 對應其同名檔；歷史名 virtual-music-clock）。
 
@@ -16,7 +16,7 @@
 - Language: Node.js ≥20（ESM，`"type": "module"`）
 - 核心依賴: `meyda`（spectrum 特徵）、`@supabase/supabase-js`、`dotenv`、`minimist`
 - 外部 CLI 依賴（不在 package.json）: **yt-dlp**（`src/youtube.mjs` 經 child_process 呼叫）
-- Datastore: Supabase Postgres `Songs` 表 + Storage bucket `song-blobs`（DDL 見 `supabase-schema.sql`）
+- Datastore: Supabase Postgres `kaf_songs` 表 + Storage bucket `song-blobs`（DDL 見 `supabase-schema.sql`）
 - Run: `node analyzer.mjs --url "<youtube-url>" [--genre <tag>] [--force] [--dry-run]`
 - Batch: `node batch.mjs urls.txt [--sleep <sec>]`（無人值守整夜批次，含限流退避）
 - Test: `pnpm test`（node --test，跑 `src/title.test.mjs`、`generate-urls.test.mjs`）

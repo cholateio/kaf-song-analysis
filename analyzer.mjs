@@ -17,7 +17,7 @@ const USAGE = `Usage: node analyzer.mjs --url "<youtube-url-or-id>" [--genre <ta
 Flags
   --url            YouTube URL in any form, or a raw 11-char video ID  (required)
   --genre          Free-form category tag (e.g. "cover", "album1", "live")
-  --force          Reprocess even if video_id already exists in "Songs"
+  --force          Reprocess even if video_id already exists in kaf_songs
   --dry-run        Run the full pipeline, skip the Supabase upsert
   --list-captions  Print available caption sources for this video and exit
   --skip-lyrics    Skip caption download entirely (lyrics columns stay null).
@@ -227,7 +227,7 @@ async function main() {
   await uploadBlob(clockPath, clockBlob);
   logOk(`uploaded: ${clockPath}`);
   await upsertSong(row);
-  logOk(`upserted to "Songs"`);
+  logOk(`upserted to kaf_songs`);
 }
 
 main().catch(err => {

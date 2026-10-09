@@ -71,7 +71,7 @@ https://youtu.be/abc12345678
 ## ☁️ 部署
 
 - 無部署——本機 CLI 工具（WSL）。
-- 輸出：Supabase `Songs` 表一列 + `song-blobs` bucket 兩個 blob
+- 輸出：Supabase `kaf_songs` 表一列 + `song-blobs` bucket 兩個 blob
   （`analysis/<video_id>.bin` 與 `clock/<video_id>.bin`）。
 - 消費端是 kaf-observatory，它只**讀** Supabase。
 
@@ -113,7 +113,7 @@ https://youtu.be/abc12345678
 | 檔案 | 內容 |
 |------|------|
 | `CLAUDE.md` | AI 協作規則 + 本專案事實（stack / file layout / constraints） |
-| `docs/reference/data-contracts.md` | `Songs` 表 + binary blob 的**權威格式規格** |
+| `docs/reference/data-contracts.md` | `kaf_songs` 表 + binary blob 的**權威格式規格** |
 | `docs/reference/clock-analysis-handover.md` | clock analysis 離線移植的交接說明（why + gotchas；格式規格在 data-contracts） |
 | `supabase-schema.sql` | DB DDL |
 

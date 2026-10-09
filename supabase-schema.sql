@@ -1,5 +1,5 @@
 -- Canonical fresh-install DDL for the song-analysis project.
--- The table name is capitalized, so every query must quote it: FROM "Songs".
+-- Table name is lowercase since the 0004 rename (2026-10-09, kaf-observatory repo); no quoting needed.
 -- For a description of the metadata JSONB shape and the binary blob format
 -- used for analysis + clock_analysis, see docs/reference/data-contracts.md.
 --
@@ -9,7 +9,7 @@
 --   song-blobs/analysis/<video_id>.bin
 --   song-blobs/clock/<video_id>.bin
 
-create table if not exists "Songs" (
+create table if not exists kaf_songs (
   id             uuid primary key default gen_random_uuid(),
   video_id       text        not null unique,
   title          text        not null,
@@ -23,4 +23,4 @@ create table if not exists "Songs" (
   updated_at     timestamptz not null default now()
 );
 
-create index if not exists songs_updated_at_idx on "Songs" (updated_at desc);
+create index if not exists songs_updated_at_idx on kaf_songs (updated_at desc);
