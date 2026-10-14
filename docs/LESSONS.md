@@ -36,3 +36,9 @@
   id 清單進版控，txt 降格為純產物；重生成結果與原手工清單逐行比對相同（238 行）。
 - Rule: 產物檔上的每一次手動編輯（新增或刪除），當場回寫成產生器裡的規則；
   比對兩份清單的差異時，先查 metadata 再下結論，不要從差集推論成因。
+
+### 2026-10-10 yt-dlp 過舊導致 403，被管線偽裝成「0 samples」
+- Context: 隔約 3 個月後跑 batch 入庫新歌，yt-dlp 停在 2026.07.04
+- Error: analyzer 只報 `✗ audio too short: 0 samples (need ≥ 2048)`；直接跑 yt-dlp 才看到 `ERROR: unable to download video data: HTTP Error 403: Forbidden`
+- Solution: `pipx upgrade yt-dlp`（2026.07.04 → 2026.08.19）後下載恢復正常
+- Rule: 隔一段時間再跑 batch 前先 `pipx upgrade yt-dlp`；看到「0 samples」先單獨跑 `yt-dlp -f bestaudio -o - <url> | wc -c` 看真正錯誤
