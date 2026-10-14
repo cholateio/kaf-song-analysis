@@ -11,6 +11,7 @@ import { exists, upsertSong, uploadBlob } from './src/db.mjs';
 import { parseTitle } from './src/title.mjs';
 
 const MAX_DURATION_SEC = 12 * 60;
+const KNOWN_FLAGS = new Set(['_', 'url', 'genre', 'force', 'dry-run', 'help', 'h']);
 
 const USAGE = `Usage: node analyzer.mjs --url "<youtube-url-or-id>" [--genre <tag>] [--force] [--dry-run]
 
@@ -79,6 +80,11 @@ async function main() {
     boolean: ['force', 'dry-run', 'help'],
     alias: { h: 'help' },
   });
+
+  // minimist accepts any flag; a retired one (e.g. --list-captions, which used
+  // to exit read-only) would otherwise fall through to a full ingest + upsert.
+  const unknown = Object.keys(argv).filter((k) => !KNOWN_FLAGS.has(k));
+  if (unknown.length > 0) fail(`unknown flag(s): ${unknown.map((k) => `--${k}`).join(', ')}\n\n${USAGE}`);
 
   if (argv.help) {
     process.stdout.write(USAGE);
