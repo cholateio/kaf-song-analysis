@@ -3,7 +3,7 @@ import 'dotenv/config';
 import minimist from 'minimist';
 import { spawn } from 'node:child_process';
 
-import { parseVideoId, fetchMetadata, fetchCaptions, spawnAudioPipeline, listCaptionSources, parseLoudnessRangeLRA } from './src/youtube.mjs';
+import { parseVideoId, fetchMetadata, spawnAudioPipeline, parseLoudnessRangeLRA } from './src/youtube.mjs';
 import { analyze } from './src/audio.mjs';
 import { clockAnalyze } from './src/clock_analysis.mjs';
 import { packAnalysis, packClock } from './src/binary_pack.mjs';
@@ -12,23 +12,14 @@ import { parseTitle } from './src/title.mjs';
 
 const MAX_DURATION_SEC = 12 * 60;
 
-const USAGE = `Usage: node analyzer.mjs --url "<youtube-url-or-id>" [--genre <tag>] [--force] [--dry-run] [--list-captions] [--skip-lyrics]
+const USAGE = `Usage: node analyzer.mjs --url "<youtube-url-or-id>" [--genre <tag>] [--force] [--dry-run]
 
 Flags
   --url            YouTube URL in any form, or a raw 11-char video ID  (required)
   --genre          Free-form category tag (e.g. "cover", "album1", "live")
   --force          Reprocess even if video_id already exists in kaf_songs
   --dry-run        Run the full pipeline, skip the Supabase upsert
-  --list-captions  Print available caption sources for this video and exit
-  --skip-lyrics    Skip caption download entirely (lyrics columns stay null).
-                   Use when YouTube is rate-limiting caption requests.
   --help           Show this message
-
-Captions
-  The analyzer always tries YouTube's official "ja" and "zh-TW" tracks in
-  parallel. Each track found is stored in its own column ("lyrics_jp" and
-  "lyrics_tw"). Auto-transcribed captions are never used. If neither track
-  exists, both columns are left null and audio analysis is still saved.
 `;
 
 function log(msg) { process.stdout.write(`${msg}\n`); }
@@ -85,7 +76,7 @@ function makeProgressReporter() {
 async function main() {
   const argv = minimist(process.argv.slice(2), {
     string: ['url', 'genre'],
-    boolean: ['force', 'dry-run', 'help', 'list-captions', 'skip-lyrics'],
+    boolean: ['force', 'dry-run', 'help'],
     alias: { h: 'help' },
   });
 
@@ -100,10 +91,9 @@ async function main() {
   if (!videoId) fail(`could not extract a YouTube video ID from: ${argv.url}`);
   logOk(`video_id: ${videoId}`);
 
-  const listOnly = argv['list-captions'];
-  await preflight({ needsDb: !argv['dry-run'] && !listOnly });
+  await preflight({ needsDb: !argv['dry-run'] });
 
-  if (!argv.force && !argv['dry-run'] && !listOnly) {
+  if (!argv.force && !argv['dry-run']) {
     const already = await exists(videoId);
     if (already) {
       log(`  already processed. Use --force to reprocess.`);
@@ -114,46 +104,9 @@ async function main() {
   const info = await fetchMetadata(videoId);
   logOk(`metadata: ${info.title}${info.artist ? ` — ${info.artist}` : ''} (${info.duration}s${info.releaseDate ? `, released ${info.releaseDate}` : ''})`);
 
-  if (listOnly) {
-    const sources = listCaptionSources(info);
-    log('');
-    log('Available captions:');
-    log(`  Official (human-uploaded): ${sources.official.length ? sources.official.join(', ') : '(none)'}`);
-    log(`  Auto-transcribed in original language: ${sources.autoOrig.length ? sources.autoOrig.map(l => `${l}-orig`).join(', ') : '(none)'}`);
-    log('');
-    log(`The analyzer only uses "Official" "ja" and "zh-TW" tracks. Auto-transcribed`);
-    log(`tracks are shown for reference but are never used (quality is too poor for lyrics).`);
-    return;
-  }
-
   if (!(info.duration > 0)) fail('yt-dlp returned no duration for this video');
   if (info.duration > MAX_DURATION_SEC) {
     fail(`duration ${info.duration}s exceeds hard cap of ${MAX_DURATION_SEC}s (12 min). Edit MAX_DURATION_SEC to override.`);
-  }
-
-  let jp = null;
-  let tw = null;
-  if (argv['skip-lyrics']) {
-    logWarn(`captions: skipped via --skip-lyrics; lyrics will be null`);
-  } else {
-    try {
-      const result = await fetchCaptions(info);
-      jp = result.jp;
-      tw = result.tw;
-      for (const errMsg of result.errors) {
-        logWarn(`captions: ${errMsg}`);
-      }
-    } catch (err) {
-      logWarn(`captions: fetch failed (${err.message}), continuing without lyrics`);
-    }
-    const found = [];
-    if (jp) found.push(`ja (${jp.length} cues)`);
-    if (tw) found.push(`zh-TW (${tw.length} cues)`);
-    if (found.length > 0) {
-      logOk(`captions: ${found.join(', ')}`);
-    } else {
-      logWarn(`captions: no official ja or zh-TW tracks; lyrics will be null`);
-    }
   }
 
   const { pcmStream, done, getFfmpegStderr } = spawnAudioPipeline(videoId);
@@ -211,8 +164,6 @@ async function main() {
       analysisBlob: analysisPath,
       clockBlob: clockPath,
     },
-    lyricsJp: jp,
-    lyricsTw: tw,
   };
 
   if (argv['dry-run']) {

@@ -1,7 +1,7 @@
 # song-analysis
 
-> 花譜（KAF）cover 曲的 YouTube ingest + 音訊分析 pipeline：抓音訊與字幕 →
-> Meyda 每幀 spectrum → binary blob + 歌詞寫進 Supabase，供 **kaf-observatory**
+> 花譜（KAF）cover 曲的 YouTube ingest + 音訊分析 pipeline：抓音訊 →
+> Meyda 每幀 spectrum → binary blob 寫進 Supabase，供 **kaf-observatory**
 > 的 3D 視覺化消費。**私人 repo，這份 README 是寫給未來的我**——隔幾個月回來
 > 能 30 秒內重啟、想起它怎麼運作、以及怎麼叫 AI 接手。
 >
@@ -23,12 +23,10 @@ node analyzer.mjs --url "<youtube-url>" --dry-run   # 單曲試跑，不寫 DB
 
 | 指令 | 用途 |
 |------|------|
-| `node analyzer.mjs --url "<url>"` | 單曲 ingest（音訊分析 + 字幕 → Supabase） |
+| `node analyzer.mjs --url "<url>"` | 單曲 ingest（音訊分析 → Supabase） |
 | `node analyzer.mjs --url "<url>" --genre <tag>` | 順便打分類標籤（`cover` / `album1` / `live`…） |
 | `node analyzer.mjs --url "<url>" --force` | 已 ingest 過的 video_id 強制重跑 |
 | `node analyzer.mjs --url "<url>" --dry-run` | 跑完整 pipeline 但跳過 Supabase 寫入 |
-| `node analyzer.mjs --url "<url>" --list-captions` | 只列這支影片有哪些字幕軌，然後結束 |
-| `node analyzer.mjs --url "<url>" --skip-lyrics` | 完全不抓字幕（YouTube 在限流時用） |
 | `node generate-urls.mjs` | 掃 `@virtual_kaf` 頻道 → 產出 `urls-virtual_kaf.txt` |
 | `node lint-titles.mjs urls-virtual_kaf.txt` | 標題正規化 dry-run 檢查（不動 DB） |
 | `node batch.mjs urls-virtual_kaf.txt` | 依序批次 ingest（整夜無人值守用） |
@@ -66,7 +64,7 @@ https://youtu.be/abc12345678
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY` —— **service-role key，不是 anon key**；upsert 要繞過 RLS。
 
-`--dry-run` 與 `--list-captions` 不碰 DB，所以沒有 `.env` 也能跑。
+`--dry-run` 不碰 DB，所以沒有 `.env` 也能跑。
 
 ## ☁️ 部署
 
@@ -83,9 +81,6 @@ https://youtu.be/abc12345678
   退出。loudness 的 LRA 值就是從 ffmpeg 的 ebur128 stderr 撈出來的。
 - **12 分鐘硬上限**：`MAX_DURATION_SEC`（`analyzer.mjs:13`）超過就 fail，
   要收長片得自己改那一行。
-- **只用官方字幕**：只認 human-uploaded 的 `ja` 與 `zh-TW`，各存一欄
-  （`lyrics_jp` / `lyrics_tw`）。auto-transcribed 永不採用（唱歌的自動字幕品質
-  太差）。兩軌都沒有時 **lyrics 留 null，音訊分析照樣存**——那不算失敗。
 - **重跑要 `--force`**：video_id 已存在就直接跳過，安靜地什麼都不做。
 - **`generate-urls.mjs` 的預設輸出是 `urls-virtual_kaf.txt`**，不是 `urls.txt`。
 - **`urls-virtual_kaf.txt` 是 gitignored 的純產物，`generate-urls.mjs` 才是真理源**

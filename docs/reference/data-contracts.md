@@ -14,7 +14,7 @@ please open a PR.
 
 For each song, `analyzer.mjs` writes two things:
 
-1. **A small row** in the Postgres `kaf_songs` table holding metadata + lyrics.
+1. **A small row** in the Postgres `kaf_songs` table holding metadata.
 2. **Two binary blobs** in the Supabase Storage bucket `song-blobs`, holding
    the per-frame spectrum and clock data that used to live in JSONB columns.
 
@@ -27,7 +27,6 @@ For each song, `analyzer.mjs` writes two things:
           │   ├─ analysisBlob: "analysis/.."│──┐
           │   ├─ clockBlob:    "clock/.."   │──┤
           │   └─ ...                        │  │
-          │  lyrics_jp, lyrics_tw (jsonb)   │  │
           └─────────────────────────────────┘  │
                                                │
           ┌────────────────────────────────────┴─┐
@@ -77,8 +76,6 @@ Summary:
 | `artist`       | text        | yes      | Uploader / channel name |
 | `release_date` | date        | yes      | From `release_date` or fallback `upload_date` |
 | `metadata`     | jsonb       | no       | See §3 |
-| `lyrics_jp`    | jsonb       | yes      | See §6 |
-| `lyrics_tw`    | jsonb       | yes      | See §6 |
 | `created_at`   | timestamptz | no       | row insertion time |
 | `updated_at`   | timestamptz | no       | last upsert time |
 
@@ -458,38 +455,11 @@ async function loadClock(song, supabase) {
 
 ---
 
-## 6. `lyrics_jp` / `lyrics_tw` — JSONB array of caption cues
+## 6. (removed) `lyrics_jp` / `lyrics_tw`
 
-Nullable. Written only if YouTube has a matching **official** (human-uploaded)
-VTT track in that language. Auto-generated captions are never stored
-regardless of quality.
-
-### Cue shape
-
-```ts
-type LyricCue = {
-  s: number;     // start time in seconds, 3 decimal places
-  d: number;     // duration in seconds, 3 decimal places
-  t: string;     // cue text, HTML-stripped, whitespace-collapsed
-};
-
-type LyricsTrack = LyricCue[] | null;
-```
-
-### Characteristics
-
-- **Cues are line-level** — `s` marks the start of a phrase, not of a word.
-  Expect phrase durations of ~2–5 seconds, not per-syllable timing.
-- Inline word-level timing markers (`<HH:MM:SS.mmm>`) that some YouTube tracks
-  include are stripped in [src/youtube.mjs `parseVtt`](../../src/youtube.mjs).
-- Cues are deduplicated when consecutive blocks repeat the same text.
-- Cues arrive in chronological order.
-
-### Fallback policy
-
-- `lyrics_jp` present, `lyrics_tw` null → Japanese track found, no Traditional Chinese
-- `lyrics_jp` null, `lyrics_tw` present → only Traditional Chinese available
-- both null → no official track in either language; the row still has analysis blobs
+Dropped 2026-10-14 (kaf-observatory migration 0009). Every row was null — no official
+caption tracks were ever found — and lyrics features were rejected. The
+caption-fetch code was removed from `song-analysis` at the same time.
 
 ---
 
@@ -503,9 +473,6 @@ Consequences:
 - `analysis.frameCount === clock.frameCount === metadata.frameCount`.
 - Map wall-clock time to index with `Math.floor(t * schema.fps)` for
   either blob.
-
-Lyrics (`lyrics_jp`, `lyrics_tw`) are not frame-indexed; they carry their own
-`s` / `d` in seconds and should be looked up by binary search or linear scan.
 
 ---
 
@@ -560,7 +527,7 @@ both the binary version byte and `schemaVersion` together.
 |---|---|---|
 | analysis | `8 + frames * 67` | ~965 KB |
 | clock | `8 + frames * 128` | ~1.8 MB |
-| row (metadata + lyrics) | — | ~50 KB |
+| row (metadata) | — | ~50 KB |
 | **Total** | | **~2.8 MB** |
 
 ### Per song (12 min ≈ 43,200 frames)
@@ -653,7 +620,7 @@ function tick() {
 
 ### Selective fetching
 
-If a page only needs one blob (e.g. a lyric-display page that doesn't render
+If a page only needs one blob (e.g. a page that doesn't render
 the clock halo), fetch only that blob. There's no penalty for skipping
 `clock_analysis` — the row doesn't carry it.
 

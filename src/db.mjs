@@ -50,8 +50,6 @@ export async function upsertSong(row) {
     genre:        row.genre,
     release_date: row.releaseDate,
     metadata:     row.metadata,
-    lyrics_jp:    row.lyricsJp,
-    lyrics_tw:    row.lyricsTw,
     updated_at:   new Date().toISOString(),
   };
   const { error } = await db.from(TABLE).upsert(payload, { onConflict: 'video_id' });

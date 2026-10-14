@@ -5,8 +5,8 @@
 
 ## Project goal
 
-花譜（KAF）cover 曲的 YouTube ingest + 音訊分析 pipeline：用 yt-dlp 抓音訊與
-字幕 → Meyda 做每幀 spectrum 分析 → 打包成 binary blob 連同歌詞寫入 Supabase
+花譜（KAF）cover 曲的 YouTube ingest + 音訊分析 pipeline：用 yt-dlp 抓音訊 →
+Meyda 做每幀 spectrum 分析 → 打包成 binary blob 寫入 Supabase
 （`kaf_songs` 表 + `song-blobs` storage bucket），供 3D 前端視覺化消費。前端消費者
 為 **kaf-observatory**（本 repo 的 `docs/reference/clock-analysis-handover.md`
 對應其同名檔；歷史名 virtual-music-clock）。

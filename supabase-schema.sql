@@ -17,8 +17,6 @@ create table if not exists kaf_songs (
   genre          text,
   release_date   date,
   metadata       jsonb       not null,
-  lyrics_jp      jsonb,
-  lyrics_tw      jsonb,
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()
 );
