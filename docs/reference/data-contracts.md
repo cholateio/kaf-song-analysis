@@ -20,7 +20,7 @@ For each song, `analyzer.mjs` writes two things:
 
 ```
           ┌─────────────────────────────────┐
-          │  Supabase Postgres kaf_songs row  │
+          │ Supabase Postgres kaf_songs row │
           │  ─────────────────────────────  │
           │  id, video_id, title, artist    │
           │  metadata (jsonb, ~5 KB)        │
@@ -74,6 +74,7 @@ Summary:
 | `video_id`     | text        | no       | unique; 11-char YouTube video ID |
 | `title`        | text        | no       | YouTube title |
 | `artist`       | text        | yes      | Uploader / channel name |
+| `genre`        | text        | yes      | Free-form tag from `--genre` (e.g. `cover`, `album1`, `live`); null if omitted |
 | `release_date` | date        | yes      | From `release_date` or fallback `upload_date` |
 | `metadata`     | jsonb       | no       | See §3 |
 | `created_at`   | timestamptz | no       | row insertion time |
@@ -502,9 +503,10 @@ Consequences:
   magic/version bytes unchanged (per-frame layout identical to v1); the `c`
   byte's semantics are narrowed from "absolute-Hz-recoverable" to
   "relative brightness within this song" — use `medianCentroidHz` for
-  cross-song comparison. Later additive amendment: `vocalOnsetRate` added as
-  an optional metadata field without a schemaVersion bump (per §8 additive
-  rule); old rows have the field missing until reprocessed.
+  cross-song comparison. Later additive amendments: `vocalOnsetRate`,
+  `vocalModulationHz`, `vocalCentroidHz` and `musicalCentroidHz` added as
+  optional metadata fields without a schemaVersion bump (per §8 additive
+  rule); old rows have the fields missing until reprocessed.
 - **v1**: original schema with all constants inlined per song.
 
 Any future version that adds fields to the analysis frame (e.g.
@@ -545,7 +547,7 @@ JSONB columns did and parse in constant-time from a single `ArrayBuffer`.
 
 ### 100 songs (average 4 min) estimate
 
-- Storage: ~280 MB (well under Supabase Pro's 100 GB quota)
+- Storage: ~280 MB (under the Supabase free tier's 1 GB storage quota)
 - One full-song fetch for the frontend: ~2.8 MB (raw) or ~1.5 MB gzipped by
   the CDN
 
@@ -679,7 +681,9 @@ export function getSchema(song) {
 ### Why bundle and not a DB table?
 
 The values never change within a schemaVersion and the analyzer already
-hardcodes them in [src/audio.mjs](../../src/audio.mjs). Storing the same values in
+hardcodes them in [src/audio.mjs](../../src/audio.mjs),
+[src/clock_analysis.mjs](../../src/clock_analysis.mjs) and
+[src/binary_pack.mjs](../../src/binary_pack.mjs). Storing the same values in
 a DB table would:
 - Add a round-trip at app load for ~1 KB of data that can't change
 - Introduce a new failure mode (no row for current schemaVersion)
@@ -692,7 +696,7 @@ A frontend map keyed by `schemaVersion` handles multi-version song catalogs
 ### Keeping server and frontend in sync
 
 When `analyzer.mjs`'s constants change, bump `schemaVersion` in
-[src/audio.mjs](../../src/audio.mjs) (and in analyzer.mjs's metadata assembly) and
+[analyzer.mjs](../../analyzer.mjs)'s metadata assembly (its only definition) and
 add a matching entry to `ANALYSIS_SCHEMAS` on the frontend in the same
 release. The `getSchema()` helper throws loudly on unknown versions, so a
 deploy skew is caught at the first song load rather than producing silently
