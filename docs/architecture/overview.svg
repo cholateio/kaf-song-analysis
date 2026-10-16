@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 908" role="img" aria-labelledby="melody-title melody-desc" font-family="'JetBrains Mono',monospace">
+  <title id="melody-title">Melody Matrix system overview</title>
+  <desc id="melody-desc">A batch driver lists channel videos from YouTube via yt-dlp and feeds an analyzer that decodes audio, extracts per-frame features and writes song rows and binary blobs to Supabase, which kaf-observatory reads to draw the Melody Matrix.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <symbol id="icon-browser" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <line x1="2" y1="9" x2="22" y2="9"/>
+      <circle cx="5.5" cy="6.5" r="0.5"/>
+      <circle cx="8" cy="6.5" r="0.5"/>
+    </symbol>
+    <symbol id="icon-bucket" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 6h16l-2 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L4 6z"/>
+      <ellipse cx="12" cy="6" rx="8" ry="2.2"/>
+    </symbol>
+    <symbol id="icon-chip" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="6" width="12" height="12" rx="2"/>
+      <rect x="9.5" y="9.5" width="5" height="5"/>
+      <path d="M9 6V3M15 6V3M9 21v-3M15 21v-3M6 9H3M6 15H3M21 9h-3M21 15h-3"/>
+    </symbol>
+    <symbol id="icon-cloud" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 18a4.5 4.5 0 1 1 .8-8.9A6 6 0 0 1 19.5 11 3.75 3.75 0 0 1 18 18H7z"/>
+    </symbol>
+    <symbol id="icon-database" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="6" rx="8" ry="3"/>
+      <path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/>
+      <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>
+    </symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2h8l4 4v16H6V2z"/>
+      <path d="M14 2v4h4"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="9" y1="16" x2="15" y2="16"/>
+    </symbol>
+    <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3.2"/>
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="10.5" cy="10.5" r="6.5"/>
+      <line x1="15.5" y1="15.5" x2="21" y2="21"/>
+    </symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <path d="M6 10l3 2-3 2"/>
+      <line x1="11" y1="15" x2="16" y2="15"/>
+    </symbol>
+  </defs>
+
+  <rect width="1200" height="908" fill="#faf8f4"/>
+
+  <text x="600" y="84" font-size="28" letter-spacing="6" text-anchor="middle" fill="#1a1a1a">MELODY MATRIX · SYSTEM OVERVIEW</text>
+
+  <g class="zone" id="zone-source" fill="none" stroke="#1a1a1a">
+    <rect x="60" y="120" width="240" height="152" rx="16" stroke-width="1.2" stroke-dasharray="5 5"/>
+    <text x="84" y="148" font-size="16" letter-spacing="3" fill="#1a1a1a" stroke="none">SOURCE</text>
+    <line x1="84" y1="156" x2="132" y2="156" stroke-width="1"/>
+  </g>
+  <g class="zone" id="zone-ingest" fill="none" stroke="#1a1a1a">
+    <rect x="364" y="120" width="520" height="152" rx="16" stroke-width="1.2" stroke-dasharray="5 5"/>
+    <text x="388" y="148" font-size="16" letter-spacing="3" fill="#1a1a1a" stroke="none">INGEST DRIVER</text>
+    <line x1="388" y1="156" x2="436" y2="156" stroke-width="1"/>
+  </g>
+  <g class="zone" id="zone-analyzer" fill="none" stroke="#1a1a1a">
+    <rect x="60" y="312" width="808" height="152" rx="16" stroke-width="1.2" stroke-dasharray="5 5"/>
+    <text x="84" y="340" font-size="16" letter-spacing="3" fill="#1a1a1a" stroke="none">ANALYZER</text>
+    <line x1="84" y1="348" x2="132" y2="348" stroke-width="1"/>
+  </g>
+  <g class="zone" id="zone-supabase" fill="none" stroke="#1a1a1a">
+    <rect x="628" y="504" width="480" height="152" rx="16" stroke-width="1.2" stroke-dasharray="5 5"/>
+    <text x="652" y="532" font-size="16" letter-spacing="3" fill="#1a1a1a" stroke="none">SUPABASE</text>
+    <line x1="652" y1="540" x2="700" y2="540" stroke-width="1"/>
+  </g>
+  <g class="zone" id="zone-consumer" fill="none" stroke="#1a1a1a">
+    <rect x="748" y="696" width="240" height="152" rx="16" stroke-width="1.2" stroke-dasharray="5 5"/>
+    <text x="772" y="724" font-size="16" letter-spacing="3" fill="#1a1a1a" stroke="none">CONSUMER</text>
+    <line x1="772" y1="732" x2="820" y2="732" stroke-width="1"/>
+  </g>
+
+  <g fill="none" stroke="#1a1a1a" stroke-width="1.5">
+    <path class="edge" id="e-youtube-urlgen" d="M276,216 H382" marker-end="url(#ah)"/>
+    <path class="edge" id="e-urlgen-batch" d="M580,216 H662" marker-end="url(#ah)"/>
+    <path class="edge" id="e-batch-audio" d="M764,248 V292 H250 V370" marker-end="url(#ah)"/>
+    <path class="edge" id="e-youtube-audio" d="M210,248 V370" marker-end="url(#ah)"/>
+    <path class="edge" id="e-audio-feature" d="M276,408 H326" marker-end="url(#ah)"/>
+    <path class="edge" id="e-feature-writer" d="M524,408 H646" marker-end="url(#ah)"/>
+    <path class="edge" id="e-writer-songs" d="M780,440 V562" marker-end="url(#ah)"/>
+    <path class="edge" id="e-writer-blobs" d="M844,408 H988 V562" marker-end="url(#ah)"/>
+    <path class="edge" id="e-songs-observatory" d="M700,632 V792 H766" stroke-dasharray="4 4"/>
+    <path class="edge" id="e-blobs-observatory" d="M1036,632 V792 H970" stroke-dasharray="4 4"/>
+  </g>
+
+  <g class="node" id="n-youtube">
+    <rect x="84" y="184" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-cloud" x="100" y="204" width="24" height="24"/>
+    <text x="140" y="212" font-size="14" font-weight="600" fill="#1a1a1a">YouTube</text>
+    <text x="140" y="230" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Via yt-dlp</text>
+  </g>
+  <g class="node" id="n-urlgen">
+    <rect x="388" y="184" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-search" x="404" y="204" width="24" height="24"/>
+    <text x="444" y="212" font-size="14" font-weight="600" fill="#1a1a1a">URL Generator</text>
+    <text x="444" y="230" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Channel scan+filter</text>
+  </g>
+  <g class="node" id="n-batch">
+    <rect x="668" y="184" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-gear" x="684" y="204" width="24" height="24"/>
+    <text x="724" y="212" font-size="14" font-weight="600" fill="#1a1a1a">Batch Runner</text>
+    <text x="724" y="230" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Sequential ingest</text>
+  </g>
+  <g class="node" id="n-audio">
+    <rect x="84" y="376" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-terminal" x="100" y="396" width="24" height="24"/>
+    <text x="140" y="404" font-size="14" font-weight="600" fill="#1a1a1a">Audio Fetch</text>
+    <text x="140" y="422" font-size="11" fill="#1a1a1a" fill-opacity="0.65">yt-dlp + ffmpeg</text>
+  </g>
+  <g class="node" id="n-feature">
+    <rect x="332" y="376" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-chip" x="348" y="396" width="24" height="24"/>
+    <text x="388" y="404" font-size="14" font-weight="600" fill="#1a1a1a">Feature Extract</text>
+    <text x="388" y="422" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Meyda + clock FFT</text>
+  </g>
+  <g class="node" id="n-writer">
+    <rect x="652" y="376" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-file" x="668" y="396" width="24" height="24"/>
+    <text x="708" y="404" font-size="14" font-weight="600" fill="#1a1a1a">Blob Writer</text>
+    <text x="708" y="422" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Pack + upsert</text>
+  </g>
+  <g class="node" id="n-songs">
+    <rect x="652" y="568" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-database" x="668" y="588" width="24" height="24"/>
+    <text x="708" y="596" font-size="14" font-weight="600" fill="#1a1a1a">kaf_songs</text>
+    <text x="708" y="614" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Row + feature JSON</text>
+  </g>
+  <g class="node" id="n-blobs">
+    <rect x="892" y="568" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-bucket" x="908" y="588" width="24" height="24"/>
+    <text x="948" y="596" font-size="14" font-weight="600" fill="#1a1a1a">song-blobs</text>
+    <text x="948" y="614" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Per-frame blobs</text>
+  </g>
+  <g class="node" id="n-observatory">
+    <rect x="772" y="760" width="192" height="64" rx="10" fill="#faf8f4" stroke="#1a1a1a" stroke-width="1.5"/>
+    <use href="#icon-browser" x="788" y="780" width="24" height="24"/>
+    <text x="828" y="788" font-size="14" font-weight="600" fill="#1a1a1a">kaf-observatory</text>
+    <text x="828" y="806" font-size="11" fill="#1a1a1a" fill-opacity="0.65">Melody Matrix viz</text>
+  </g>
+
+  <g class="label" id="l-video-list" data-edge="e-youtube-urlgen">
+    <rect x="292" y="196" width="77" height="14" fill="#faf8f4"/>
+    <text x="296" y="206" font-size="10" letter-spacing="1" fill="#1a1a1a">VIDEO LIST</text>
+  </g>
+  <g class="label" id="l-url-file" data-edge="e-urlgen-batch">
+    <rect x="592" y="196" width="63" height="14" fill="#faf8f4"/>
+    <text x="596" y="206" font-size="10" letter-spacing="1" fill="#1a1a1a">URL FILE</text>
+  </g>
+  <g class="label" id="l-pcm" data-edge="e-audio-feature">
+    <rect x="290" y="388" width="28" height="14" fill="#faf8f4"/>
+    <text x="294" y="398" font-size="10" letter-spacing="1" fill="#1a1a1a">PCM</text>
+  </g>
+  <g class="label" id="l-frame-features" data-edge="e-feature-writer">
+    <rect x="536" y="388" width="105" height="14" fill="#faf8f4"/>
+    <text x="540" y="398" font-size="10" letter-spacing="1" fill="#1a1a1a">FRAME FEATURES</text>
+  </g>
+</svg>
