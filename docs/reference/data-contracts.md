@@ -85,6 +85,10 @@ Storage blobs referenced from `metadata`.
 
 Index: `songs_updated_at_idx on (updated_at desc)`.
 
+RLS: enabled, with a single public `SELECT` policy (`anon, authenticated`) so
+the frontend can read with the anon key. There are no write policies; only the
+service-role key used by `analyzer.mjs` (which bypasses RLS) can write.
+
 Static constants (sample rate, band edges, blob header layout, clock render
 parameters) that are identical for every song with a given `schemaVersion`
 are **not** stored in the database. They're hardcoded in the frontend bundle,

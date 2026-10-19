@@ -22,3 +22,16 @@ create table if not exists kaf_songs (
 );
 
 create index if not exists songs_updated_at_idx on kaf_songs (updated_at desc);
+
+-- Row Level Security: the frontend reads with the anon key, so expose SELECT
+-- publicly; there is deliberately no INSERT/UPDATE/DELETE policy, so anon and
+-- authenticated clients cannot write. analyzer.mjs writes with the
+-- service-role key (src/db.mjs), which bypasses RLS.
+alter table kaf_songs enable row level security;
+
+drop policy if exists "kaf_songs public read" on kaf_songs;
+create policy "kaf_songs public read"
+  on kaf_songs
+  for select
+  to anon, authenticated
+  using (true);
