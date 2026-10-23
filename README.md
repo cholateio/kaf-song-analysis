@@ -1,5 +1,7 @@
 # song-analysis
 
+**English** | [繁體中文](README.zh-TW.md)
+
 You want a music visualizer to react to real songs from a YouTube channel without analysing audio in the browser. Give it a video URL, or let it walk a whole channel, and each song becomes one database row of per-song features plus two binary files of frame-by-frame spectrum data at 60 frames per second, all in your own Supabase project.
 
 ```
