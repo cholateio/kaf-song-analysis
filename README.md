@@ -1,8 +1,8 @@
 # song-analysis
 
-**English** | [繁體中文](README.zh-TW.md)
+**繁體中文** | [English](README.en.md)
 
-You want a music visualizer to react to real songs from a YouTube channel without analysing audio in the browser. Give it a video URL, or let it walk a whole channel, and each song becomes one database row of per-song features plus two binary files of frame-by-frame spectrum data at 60 frames per second, all in your own Supabase project.
+你想讓音樂視覺化效果跟著某個 YouTube 頻道的真實歌曲動起來，又不想在瀏覽器裡分析音訊。給它一個影片網址，或讓它走過整個頻道，每首歌就會變成資料庫裡的一列（存放整首歌的特徵），外加兩個二進位檔（存放每秒 60 幀、逐幀的頻譜資料），全部存在你自己的 Supabase 專案裡。
 
 ```
 $ node analyzer.mjs --url "https://www.youtube.com/watch?v=jpwy7kP8Pps" --dry-run
@@ -16,12 +16,12 @@ $ node analyzer.mjs --url "https://www.youtube.com/watch?v=jpwy7kP8Pps" --dry-ru
 ✓ dry-run: row 505.0 B + blobs 2.9 MB = 2.9 MB (upload skipped)
 ```
 
-- **Per-song features**: BPM with a confidence score, three spectral-centroid measures, EBU R128 loudness range, spectral contrast, and vocal-band onset rate and modulation, stored in a `metadata` JSON column.
-- **Frame data**: an analysis file with 64 log-spaced bands, RMS loudness, centroid and a beat flag per frame, and a clock file with 128 FFT bins per frame that matches a Web Audio `AnalyserNode` with `fftSize` 256.
-- **Whole channels**: `generate-urls.mjs` lists a channel's videos with yt-dlp, drops trailers, live versions and clips outside 125–600 seconds, and `batch.mjs` ingests the list overnight with pauses, one retry, and a file of failed URLs to rerun.
-- **Safe reruns**: songs already in the table are skipped unless you pass `--force`, and `--dry-run` runs the full analysis without touching the database.
+- **整首歌的特徵**：附信心分數的 BPM、三種頻譜重心（spectral centroid）指標、EBU R128 響度範圍、頻譜對比，以及人聲頻段的起音率（onset rate）和調變，存在 `metadata` 這個 JSON 欄位裡。
+- **逐幀資料**：分析檔每一幀有 64 個對數間隔的頻帶、RMS 響度、頻譜重心和節拍旗標；clock 檔每一幀有 128 個 FFT bin，和 `fftSize` 為 256 的 Web Audio `AnalyserNode` 結果一致。
+- **整個頻道**：`generate-urls.mjs` 用 yt-dlp 列出頻道的影片，排除預告、live 版本和長度不在 125–600 秒之間的片段；`batch.mjs` 再整夜依清單匯入，中間會暫停、失敗重試一次，並把失敗的網址寫進一個檔案方便重跑。
+- **可以放心重跑**：已經在資料表裡的歌會被跳過，除非你加上 `--force`；`--dry-run` 會跑完整個分析，但完全不動資料庫。
 
-Input and output for one batch run:
+一次批次執行的輸入與輸出：
 
 ```
 # urls.txt: one URL per line, optional genre tag after a space
@@ -35,38 +35,38 @@ analysis/<video_id>.bin  8-byte header + 67 bytes per frame
 clock/<video_id>.bin     8-byte header + 128 bytes per frame
 ```
 
-The channel default, video filters, genre tags and title clean-up are written for the KAF (花譜) channel; another artist's catalogue needs edits in `generate-urls.mjs` and `src/title.mjs`. Videos longer than 12 minutes are rejected.
+預設頻道、影片過濾條件、曲風標籤和標題整理規則都是針對花譜（KAF）的頻道寫的；換成其他歌手的作品，需要修改 `generate-urls.mjs` 和 `src/title.mjs`。超過 12 分鐘的影片會被拒絕。
 
-## How it works
+## 它怎麼運作
 
 ```
-YouTube ──► yt-dlp ──► ffmpeg (48 kHz PCM, loudness) ──► Meyda + FFT per frame
-                                                              │
-                                     your Supabase: table row + two .bin files in Storage
+YouTube ──► yt-dlp ──► ffmpeg（48 kHz PCM、響度） ──► Meyda + 逐幀 FFT
+                                                           │
+                                  你的 Supabase：資料表一列 + Storage 裡的兩個 .bin 檔
 ```
 
-Audio streams through memory and is never saved to disk. There is no server; everything runs on your machine.
+音訊以串流方式經過記憶體，從不存到磁碟上。沒有伺服器，所有東西都在你的電腦上執行。
 
-## Install
+## 安裝
 
-You need Node.js 20 or newer with pnpm, `yt-dlp` and `ffmpeg` on your `PATH`, and a Supabase project of your own.
+需要：Node.js 20 以上和 pnpm、`PATH` 裡找得到 `yt-dlp` 和 `ffmpeg`，以及一個你自己的 Supabase 專案。
 
-1. Clone the repo and run `pnpm install`.
-2. In Supabase, open **SQL Editor** and run `supabase-schema.sql`. It creates the `kaf_songs` table with public read access.
-3. Open **Storage → New bucket**, turn **Public bucket** on, and use the bucket name given at the top of `supabase-schema.sql`. The analyzer writes to that fixed name.
-4. Copy `.env.example` to `.env` and fill in your project URL and the **service-role** key from **Project Settings → API**. The analyzer writes past row-level security, so the public anon key will not work.
-5. Try one song with `node analyzer.mjs --url "<youtube-url>" --dry-run`, then run it again without `--dry-run` to save it.
-6. For a whole channel, run `node generate-urls.mjs --channel <channel-videos-url> --out urls.txt`, then `node batch.mjs urls.txt`.
+1. Clone 本 repo，執行 `pnpm install`。
+2. 在 Supabase 打開 **SQL Editor**，執行 `supabase-schema.sql`。它會建立開放公開讀取的 `kaf_songs` 資料表。
+3. 打開 **Storage → New bucket**，開啟 **Public bucket**，bucket 名稱使用 `supabase-schema.sql` 開頭寫的那個。分析程式會寫入這個固定名稱。
+4. 把 `.env.example` 複製成 `.env`，填上你的專案 URL，以及 **Project Settings → API** 裡的 **service-role** key。分析程式寫入時會略過 row-level security，所以公開的 anon key 不能用。
+5. 先用 `node analyzer.mjs --url "<youtube-url>" --dry-run` 試一首歌，再拿掉 `--dry-run` 跑一次把它存起來。
+6. 要處理整個頻道，先執行 `node generate-urls.mjs --channel <channel-videos-url> --out urls.txt`，再執行 `node batch.mjs urls.txt`。
 
-`--dry-run` needs no `.env`, so step 5 works before Supabase is set up.
+`--dry-run` 不需要 `.env`，所以在設定好 Supabase 之前就能做第 5 步。
 
-## Privacy & security
+## 隱私與安全
 
-- The service-role key stays in your local `.env` and is only sent to your own Supabase project. It bypasses row-level security, so keep it off shared machines.
-- The table and the bucket are public for reading: anyone with your project URL and anon key can read the features and frame files. Nobody can write without the service-role key.
-- Only the title, uploader, release date and derived numbers are stored. No audio or video leaves your machine.
-- yt-dlp talks to YouTube directly from your computer, under YouTube's terms.
+- service-role key 只放在你本機的 `.env`，也只會送到你自己的 Supabase 專案。它會繞過 row-level security，所以別放在共用的電腦上。
+- 資料表和 bucket 都開放公開讀取：任何拿到你專案 URL 和 anon key 的人，都能讀取特徵和逐幀檔案。沒有 service-role key 就沒辦法寫入。
+- 只儲存標題、上傳者、發行日期和計算出來的數值。音訊和影片都不會離開你的電腦。
+- yt-dlp 直接從你的電腦連到 YouTube，並受 YouTube 的服務條款約束。
 
-## License
+## 授權
 
-[MIT](LICENSE). Audio features are computed with [Meyda](https://meyda.js.org/).
+[MIT](LICENSE)。音訊特徵使用 [Meyda](https://meyda.js.org/) 計算。

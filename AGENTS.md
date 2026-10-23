@@ -47,7 +47,7 @@ Meyda 做每幀 spectrum 分析 → 打包成 binary blob 寫入 Supabase
 
 - Conventional commits（`type(scope): 摘要`）；commit 前跑 `pnpm test`。
 - 以 `video_id` 對帳，不用標題（頻道掃描拿英文標題、單曲 metadata 拿日文標題）。
-- `README.md`（英文）與 `README.zh-TW.md`（繁中）互為對照版本，改其中一份就要在同一個 commit 同步更新另一份。
+- `README.md`（繁中，預設）與 `README.en.md`（英文）互為對照版本，改其中一份就要在同一個 commit 同步更新另一份。
 - GitHub Actions: top-level `permissions: contents: read`, raised per job only when needed.
 - GitHub Actions: pin every `uses:` to a 40-character commit SHA with a trailing `# vX.Y.Z` comment.
 
