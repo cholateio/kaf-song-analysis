@@ -1,4 +1,4 @@
-# song-analysis
+# kaf-song-analysis
 
 ## Project goal
 
@@ -33,6 +33,7 @@ Meyda 做每幀 spectrum 分析 → 打包成 binary blob 寫入 Supabase
 - `supabase-schema.sql` — DB DDL
 - `docs/reference/` — 給前端的交接文件（`data-contracts.md`＝資料格式權威來源、
   `clock-analysis-handover.md`＝clock 移植的 why + gotchas）
+- `docs/assets/` — README 用圖（`melody-matrix.webp`＝kaf-observatory 星圖截圖）
 
 ## Constraints
 

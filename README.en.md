@@ -1,8 +1,14 @@
-# song-analysis
+# kaf-song-analysis
 
 [繁體中文](README.md) | **English**
 
 You want a music visualizer to react to real songs from a YouTube channel without analysing audio in the browser. Give it a video URL, or let it walk a whole channel, and each song becomes one database row of per-song features plus two binary files of frame-by-frame spectrum data at 60 frames per second, all in your own Supabase project.
+
+It was written for the KAF (花譜) catalogue and feeds [kaf-observatory](https://kaf-observatory.vercel.app). The audio analysis itself works for any artist; [the section below](#what-is-specific-to-kaf) lists what is tied to KAF.
+
+![The Melody Matrix star map in kaf-observatory: each dot is a song, timbre brightness runs left to right, arrangement density runs top to bottom, and a selected set list sits on the right](docs/assets/melody-matrix.webp)
+
+*Above: kaf-observatory's Melody Matrix, drawn from the features this tool produces. Each dot is a song; the horizontal axis is `medianCentroidHz` (dark to bright timbre), the vertical axis is `meanSpectralContrastDb` (wall of sound to clearly separated instruments), and the corners are labelled 静謐 (calm), 煌めき (sparkle), 重厚 (heavy) and 爆裂 (explosive).*
 
 ```
 $ node analyzer.mjs --url "https://www.youtube.com/watch?v=jpwy7kP8Pps" --dry-run
@@ -35,7 +41,22 @@ analysis/<video_id>.bin  8-byte header + 67 bytes per frame
 clock/<video_id>.bin     8-byte header + 128 bytes per frame
 ```
 
-The channel default, video filters, genre tags and title clean-up are written for the KAF (花譜) channel; another artist's catalogue needs edits in `generate-urls.mjs` and `src/title.mjs`. Videos longer than 12 minutes are rejected.
+Videos longer than 12 minutes are rejected (`MAX_DURATION_SEC` in `analyzer.mjs`).
+
+## What is specific to KAF
+
+Downloading, spectrum analysis, binary packing and upload work for any artist, and `analyzer.mjs` accepts any YouTube URL. The places below are hard-coded around the KAF channel's conventions and need changes for another artist:
+
+| Where | What is tied to KAF | For another artist |
+|-------|---------------------|--------------------|
+| `DEFAULT_CHANNEL`, `DEFAULT_OUT` in `generate-urls.mjs` | Scans the `@virtual_kaf` channel and writes `urls-virtual_kaf.txt` by default (`lint-titles.mjs` reads that file by default too) | Pass `--channel` and `--out`, or change the defaults |
+| `shouldSkip` in `generate-urls.mjs` | Drops videos outside 125–600 seconds and titles containing `Trailer`, `Live Ver` or `前夜` | Adjust to the channel's naming |
+| `KEEP_IDS`, `DROP_IDS` in `generate-urls.mjs` | Video IDs on the KAF channel that are always kept or always dropped | Empty them and add the new channel's exceptions |
+| `classify` in `generate-urls.mjs` | Genre from title keywords: `歌ってみた`/`Cover`/`covered` → `cover`, `可不` → `kafu`, `組曲`/`Suite` → `suite`, everything else → `album` | Rewrite the rules, or skip genre tags |
+| `src/title.mjs` | Cleans up KAF title formats, such as removing `covered by 花譜`, turning `花譜 #77「ソレカラ」` into the song name, and detecting `花譜×` collaborations | Rewrite the rules, and replace the cases in `src/title.test.mjs` |
+| `TABLE` in `src/db.mjs`, `supabase-schema.sql` | The table is named `kaf_songs` (the `song-blobs` bucket has no artist in its name) | The name can stay; to rename it, change both files together |
+
+The clock file's 128 bins per frame and `fftSize` 256 match the Web Audio setup in the kaf-observatory front end and have nothing to do with the artist. If your front end uses a different `fftSize`, change `src/clock_analysis.mjs`.
 
 ## How it works
 

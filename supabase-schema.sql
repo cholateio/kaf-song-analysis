@@ -1,4 +1,4 @@
--- Canonical fresh-install DDL for the song-analysis project.
+-- Canonical fresh-install DDL for the kaf-song-analysis project.
 -- Table name is lowercase since the 0004 rename (2026-10-09, kaf-observatory repo); no quoting needed.
 -- For a description of the metadata JSONB shape and the binary blob format
 -- used for analysis + clock_analysis, see docs/reference/data-contracts.md.

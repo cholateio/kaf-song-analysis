@@ -1,8 +1,14 @@
-# song-analysis
+# kaf-song-analysis
 
 **繁體中文** | [English](README.en.md)
 
 你想讓音樂視覺化效果跟著某個 YouTube 頻道的真實歌曲動起來，又不想在瀏覽器裡分析音訊。給它一個影片網址，或讓它走過整個頻道，每首歌就會變成資料庫裡的一列（存放整首歌的特徵），外加兩個二進位檔（存放每秒 60 幀、逐幀的頻譜資料），全部存在你自己的 Supabase 專案裡。
+
+這套工具是為花譜（KAF）的曲庫寫的，產出的資料供 [kaf-observatory](https://kaf-observatory.vercel.app) 使用；音訊分析本身不限歌手，哪些地方綁定花譜見[下方說明](#哪些地方是為花譜寫的)。
+
+![kaf-observatory 的 Melody Matrix 星圖：每個點是一首歌，橫軸是音色明暗、縱軸是編曲密度，右側是框選出的播放清單](docs/assets/melody-matrix.webp)
+
+*上圖是 kaf-observatory 的 Melody Matrix，用本工具產出的特徵畫成：每個點是一首歌，橫軸是 `medianCentroidHz`（音色明暗），縱軸是 `meanSpectralContrastDb`（音牆厚重或樂器分明），四個角落標著 静謐／煌めき／重厚／爆裂。*
 
 ```
 $ node analyzer.mjs --url "https://www.youtube.com/watch?v=jpwy7kP8Pps" --dry-run
@@ -35,7 +41,22 @@ analysis/<video_id>.bin  8-byte header + 67 bytes per frame
 clock/<video_id>.bin     8-byte header + 128 bytes per frame
 ```
 
-預設頻道、影片過濾條件、曲風標籤和標題整理規則都是針對花譜（KAF）的頻道寫的；換成其他歌手的作品，需要修改 `generate-urls.mjs` 和 `src/title.mjs`。超過 12 分鐘的影片會被拒絕。
+超過 12 分鐘的影片會被拒絕（`analyzer.mjs` 的 `MAX_DURATION_SEC`）。
+
+## 哪些地方是為花譜寫的
+
+下載音訊、頻譜分析、二進位打包和上傳都不分歌手，任何 YouTube 網址都能交給 `analyzer.mjs`。下面這些地方則是照花譜頻道的習慣寫死的，換成其他歌手時要改：
+
+| 位置 | 綁定花譜的內容 | 換成其他歌手時 |
+|------|----------------|----------------|
+| `generate-urls.mjs` 的 `DEFAULT_CHANNEL`、`DEFAULT_OUT` | 預設掃描 `@virtual_kaf` 頻道，輸出 `urls-virtual_kaf.txt`（`lint-titles.mjs` 也預設讀這個檔） | 執行時加上 `--channel` 和 `--out`，或直接改預設值 |
+| `generate-urls.mjs` 的 `shouldSkip` | 排除長度不在 125–600 秒之間的影片，以及標題含 `Trailer`、`Live Ver`、`前夜` 的影片 | 依照該頻道的命名方式調整 |
+| `generate-urls.mjs` 的 `KEEP_IDS`、`DROP_IDS` | 花譜頻道上需要強制保留或排除的影片 ID | 清空，再換成新頻道的例外 |
+| `generate-urls.mjs` 的 `classify` | 用標題關鍵字分曲風：`歌ってみた`／`Cover`／`covered` 歸 `cover`、`可不` 歸 `kafu`、`組曲`／`Suite` 歸 `suite`，其餘歸 `album` | 改寫分類規則，或不用曲風標籤 |
+| `src/title.mjs` | 整理花譜特有的標題格式，例如去掉 `covered by 花譜`、把 `花譜 #77「ソレカラ」` 整理成曲名、辨識 `花譜×` 合作曲 | 改寫規則；`src/title.test.mjs` 的測試案例也要一起換 |
+| `src/db.mjs` 的 `TABLE`、`supabase-schema.sql` | 資料表名稱是 `kaf_songs`（bucket `song-blobs` 不含歌手名） | 名稱可以沿用；要改的話，兩個檔案要一起改 |
+
+clock 檔每一幀 128 個 bin、`fftSize` 256，是為了配合 kaf-observatory 前端的 Web Audio 設定，跟歌手無關；如果你的前端用不同的 `fftSize`，要改的是 `src/clock_analysis.mjs`。
 
 ## 它怎麼運作
 
