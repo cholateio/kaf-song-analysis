@@ -18,25 +18,25 @@ Release workflow for a new upload: `generate-urls` → `lint-titles` (check the 
 
 ## Scheduled update
 
-A Windows scheduled task named `kaf-song-analysis update` runs `scripts/scheduled-update.sh` in WSL every day at 03:00 (set up 2026-11-20). The wrapper sets `PATH` (nvm's node, and `~/.local/bin/yt-dlp` ahead of the outdated apt copy in `/usr/bin`), takes a lock so runs never overlap, and runs `scripts/update.mjs`:
+A Windows scheduled task named `kaf-song-analysis update` runs `scripts/scheduled-update.sh` in WSL every day at 01:00 (set up 2026-11-20). The wrapper sets `PATH` (nvm's node, and `~/.local/bin/yt-dlp` ahead of the outdated apt copy in `/usr/bin`), takes a lock so runs never overlap, and runs `scripts/update.mjs`:
 
 1. `generate-urls.mjs` rewrites `urls-virtual_kaf.txt`;
 2. IDs already in `kaf_songs` are dropped;
 3. each new title goes through `parseTitle`; a title no rule matches is skipped and logged as `SKIPPED … no title rule matched`, because it would be stored as-is and mis-sort the A-Z index. Add a rule to `src/title.mjs`, then ingest it with `analyzer.mjs`;
 4. the rest go through `batch.mjs`.
 
-Output goes only to `~/.local/state/kaf-song-analysis/update.log` (last 2000 lines kept); nothing notifies. The task does not wake the PC and does not run missed starts after boot (user decision), so a day with the PC off or asleep at 03:00 is simply skipped; the next run catches up. Each run stops after 2 hours.
+Output goes only to `~/.local/state/kaf-song-analysis/update.log` (last 2000 lines kept); nothing notifies. The task does not wake the PC and does not run missed starts after boot (user decision), so a day with the PC off or asleep at 01:00 is simply skipped; the next run catches up. Each run stops after 2 hours.
 
 ```
 # create (from WSL, in a Windows directory such as /mnt/c)
-schtasks.exe /Create /TN "kaf-song-analysis update" /SC DAILY /ST 03:00 /F \
+schtasks.exe /Create /TN "kaf-song-analysis update" /SC DAILY /ST 01:00 /F \
   /TR "conhost.exe --headless wsl.exe -d Ubuntu-24.04 -e /home/<you>/kaf-song-analysis/scripts/scheduled-update.sh"
 # run now / remove
 schtasks.exe /Run /TN "kaf-song-analysis update"
 schtasks.exe /Delete /TN "kaf-song-analysis update" /F
 ```
 
-`conhost.exe --headless` keeps a console window from flashing up at 03:00. The 2-hour limit is set afterwards with PowerShell (`Set-ScheduledTask` with `Settings.ExecutionTimeLimit = "PT2H"`).
+`conhost.exe --headless` keeps a console window from flashing up at 01:00. The 2-hour limit is set afterwards with PowerShell (`Set-ScheduledTask` with `Settings.ExecutionTimeLimit = "PT2H"`).
 
 ## Batch rate limiting
 

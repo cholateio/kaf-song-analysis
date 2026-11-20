@@ -16,7 +16,7 @@ Meyda 做每幀 spectrum 分析 → 打包成 binary blob 寫入 Supabase
 - Datastore: Supabase Postgres `kaf_songs` 表 + Storage bucket `song-blobs`（DDL 見 `supabase-schema.sql`）
 - Run: `node analyzer.mjs --url "<youtube-url>" [--genre <tag>] [--force] [--dry-run]`
 - Batch: `node batch.mjs urls.txt [--sleep <sec>]`（無人值守整夜批次，含限流退避）
-- 自動更新: `node scripts/update.mjs`（掃頻道 → 只處理表裡沒有的 → 標題檢查 → batch）；Windows 排程每天 03:00 經 `scripts/scheduled-update.sh` 呼叫，log 在 `~/.local/state/kaf-song-analysis/update.log`
+- 自動更新: `node scripts/update.mjs`（掃頻道 → 只處理表裡沒有的 → 標題檢查 → batch）；Windows 排程每天 01:00 經 `scripts/scheduled-update.sh` 呼叫，log 在 `~/.local/state/kaf-song-analysis/update.log`
 - Test: `pnpm test`（node --test，自動抓所有 `*.test.mjs`：`src/title.test.mjs`、`src/urlList.test.mjs`、`generate-urls.test.mjs`、`analyzer.test.mjs`）
 
 ## File layout
