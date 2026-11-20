@@ -16,7 +16,8 @@ Meyda 做每幀 spectrum 分析 → 打包成 binary blob 寫入 Supabase
 - Datastore: Supabase Postgres `kaf_songs` 表 + Storage bucket `song-blobs`（DDL 見 `supabase-schema.sql`）
 - Run: `node analyzer.mjs --url "<youtube-url>" [--genre <tag>] [--force] [--dry-run]`
 - Batch: `node batch.mjs urls.txt [--sleep <sec>]`（無人值守整夜批次，含限流退避）
-- Test: `pnpm test`（node --test，自動抓所有 `*.test.mjs`：`src/title.test.mjs`、`generate-urls.test.mjs`、`analyzer.test.mjs`）
+- 自動更新: `node scripts/update.mjs`（掃頻道 → 只處理表裡沒有的 → 標題檢查 → batch）；Windows 排程每天 03:00 經 `scripts/scheduled-update.sh` 呼叫，log 在 `~/.local/state/kaf-song-analysis/update.log`
+- Test: `pnpm test`（node --test，自動抓所有 `*.test.mjs`：`src/title.test.mjs`、`src/urlList.test.mjs`、`generate-urls.test.mjs`、`analyzer.test.mjs`）
 
 ## File layout
 
@@ -26,6 +27,8 @@ Meyda 做每幀 spectrum 分析 → 打包成 binary blob 寫入 Supabase
   過濾例外寫在 `KEEP_IDS`（強制保留）／`DROP_IDS`（強制排除），產出的 txt
   是 gitignored 純產物，不要手改
 - `lint-titles.mjs` — 標題 dry-run 檢查
+- `scripts/update.mjs` — 無人值守的新歌更新；`scripts/scheduled-update.sh` — Windows 排程的進入點（設 PATH、鎖、寫 log）
+- `src/urlList.mjs`（+ .test.mjs）— URL 清單解析與「表裡還沒有」的篩選
 - `src/youtube.mjs` — yt-dlp wrapper；`src/audio.mjs` — Meyda spectrum 抽取
 - `src/clock_analysis.mjs` — 前端 live FFT 的離線移植版
 - `src/binary_pack.mjs` — binary blob 打包；`src/db.mjs` — Supabase client / upsert

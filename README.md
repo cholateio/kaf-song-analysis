@@ -78,6 +78,7 @@ YouTube ──► yt-dlp ──► ffmpeg（48 kHz PCM、響度） ──► Mey
 4. 把 `.env.example` 複製成 `.env`，填上你的專案 URL，以及 **Project Settings → API** 裡的 **service-role** key。分析程式寫入時會略過 row-level security，所以公開的 anon key 不能用。
 5. 先用 `node analyzer.mjs --url "<youtube-url>" --dry-run` 試一首歌，再拿掉 `--dry-run` 跑一次把它存起來。
 6. 要處理整個頻道，先執行 `node generate-urls.mjs --channel <channel-videos-url> --out urls.txt`，再執行 `node batch.mjs urls.txt`。
+7. 之後要自動處理新上架的歌，就讓排程器定期執行 `scripts/scheduled-update.sh`：它會掃頻道、只分析資料表裡還沒有的影片，結果寫進 log。Windows + WSL 的設定方式寫在 `docs/DEVELOPMENT.md` 的「Scheduled update」。
 
 `--dry-run` 不需要 `.env`，所以在設定好 Supabase 之前就能做第 5 步。
 

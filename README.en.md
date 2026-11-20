@@ -78,6 +78,7 @@ You need Node.js 20 or newer with pnpm, `yt-dlp` and `ffmpeg` on your `PATH`, an
 4. Copy `.env.example` to `.env` and fill in your project URL and the **service-role** key from **Project Settings → API**. The analyzer writes past row-level security, so the public anon key will not work.
 5. Try one song with `node analyzer.mjs --url "<youtube-url>" --dry-run`, then run it again without `--dry-run` to save it.
 6. For a whole channel, run `node generate-urls.mjs --channel <channel-videos-url> --out urls.txt`, then `node batch.mjs urls.txt`.
+7. To pick up new uploads automatically, have a scheduler run `scripts/scheduled-update.sh` regularly: it scans the channel, analyzes only videos missing from the table, and writes the result to a log. The Windows + WSL setup is under "Scheduled update" in `docs/DEVELOPMENT.md`.
 
 `--dry-run` needs no `.env`, so step 5 works before Supabase is set up.
 
